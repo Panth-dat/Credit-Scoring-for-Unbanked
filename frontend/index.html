@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CreditIQ — Pre-CIBIL Score</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g50:#f0fdf4;--g100:#dcfce7;--g200:#bbf7d0;--g300:#86efac;--g400:#4ade80;
+  --g500:#22c55e;--g600:#16a34a;--g700:#15803d;--g800:#166534;
+  --w:#ffffff;
+  --gray50:#f9fafb;--gray100:#f3f4f6;--gray200:#e5e7eb;--gray300:#d1d5db;
+  --gray400:#9ca3af;--gray500:#6b7280;--gray600:#4b5563;--gray700:#374151;
+  --gray800:#1f2937;--gray900:#111827;
+  --red:#dc2626;--amber:#ca8a04;--orange:#ea580c;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 16px rgba(0,0,0,.1);
+  --r:12px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--g50);color:var(--gray900);min-height:100vh}
+
+/* NAV */
+nav{background:var(--w);border-bottom:2px solid var(--g200);height:60px;padding:0 28px;
+    display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:999;box-shadow:var(--shadow)}
+.logo{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;color:var(--g700);cursor:pointer;user-select:none}
+.logo-box{width:34px;height:34px;background:var(--g600);border-radius:8px;color:#fff;
+           display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px}
+.nav-right{display:flex;align-items:center;gap:8px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;cursor:pointer;
+     font-family:inherit;font-weight:600;border-radius:9px;transition:.15s;white-space:nowrap}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-green{background:var(--g600);color:#fff;padding:12px 24px;font-size:15px}
+.btn-green:not(:disabled):hover{background:var(--g700)}
+.btn-green-sm{background:var(--g600);color:#fff;padding:9px 18px;font-size:14px}
+.btn-green-sm:not(:disabled):hover{background:var(--g700)}
+.btn-outline{background:var(--w);color:var(--g700);border:1.5px solid var(--g300);padding:8px 16px;font-size:14px}
+.btn-outline:hover{background:var(--g50)}
+.btn-ghost{background:transparent;color:var(--gray500);border:1.5px solid var(--gray200);padding:8px 16px;font-size:14px}
+.btn-ghost:hover{background:var(--gray100)}
+.badge{background:var(--g100);color:var(--g700);padding:4px 13px;border-radius:99px;font-size:13px;font-weight:600}
+
+/* CARDS */
+.card{background:var(--w);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--shadow)}
+.cp{padding:22px}
+.sec-head{font-size:15px;font-weight:700;color:var(--gray800);margin-bottom:16px;
+          display:flex;align-items:center;gap:8px}
+.sec-head::before{content:'';width:4px;height:18px;background:var(--g500);border-radius:2px;flex-shrink:0}
+
+/* LAYOUT */
+.wrap{max-width:1280px;margin:0 auto;padding:0 22px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:960px){.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.g2,.g3,.g4,.score-hero{grid-template-columns:1fr!important}}
+
+/* SPINNER */
+.spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;
+      border-radius:50%;animation:_spin .6s linear infinite;display:inline-block;flex-shrink:0}
+.spin-g{border-color:rgba(22,163,74,.25);border-top-color:var(--g600)}
+@keyframes _spin{to{transform:rotate(360deg)}}
+
+/* ═══ HOME ═══ */
+.hero{text-align:center;padding:64px 22px 40px}
+.hero h1{font-size:clamp(26px,5vw,52px);font-weight:800;line-height:1.14;margin-bottom:12px}
+.hero h1 em{color:var(--g600);font-style:normal}
+.hero p{font-size:17px;color:var(--gray500);max-width:480px;margin:0 auto}
+
+/* Upload card */
+.upload-wrap{max-width:580px;margin:28px auto 0;padding:0 22px}
+.drop-zone{border:2.5px dashed var(--g300);border-radius:14px;background:var(--w);
+           padding:36px 24px;text-align:center;cursor:pointer;transition:.18s;position:relative}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--g500);background:var(--g50);transform:scale(1.01)}
+.drop-icon{font-size:46px;margin-bottom:10px;line-height:1}
+.drop-title{font-size:17px;font-weight:700;color:var(--gray800);margin-bottom:5px}
+.drop-sub{font-size:13px;color:var(--gray400);margin-bottom:18px}
+.supported{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.bank-tag{padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;
+          background:var(--g100);color:var(--g700)}
+
+/* File status area */
+.file-status{margin-top:14px}
+.fbox{border-radius:10px;padding:14px 16px;display:none}
+.fbox-ok{background:var(--g50);border:1.5px solid var(--g300)}
+.fbox-err{background:#fff5f5;border:1.5px solid #fecaca;color:var(--red)}
+.frow{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:6px;color:var(--gray700)}
+.frow:last-child{margin-bottom:0}
+.frow strong{color:var(--gray900)}
+
+/* Analyze button — big, prominent, only shows after valid file */
+.analyze-wrap{display:none;margin-top:16px;text-align:center}
+.analyze-wrap .btn-green{width:100%;font-size:16px;padding:14px;border-radius:10px;
+  box-shadow:0 4px 14px rgba(22,163,74,.35)}
+.analyze-wrap .btn-green:hover:not(:disabled){box-shadow:0 6px 20px rgba(22,163,74,.45)}
+
+/* CSV Guide */
+.csv-guide{background:var(--gray50);border:1px solid var(--gray200);border-radius:9px;
+           padding:12px 16px;margin-top:12px;font-size:13px}
+.csv-guide summary{cursor:pointer;font-weight:600;color:var(--gray600);list-style:none}
+.csv-guide summary::before{content:'▶ '}
+.csv-guide[open] summary::before{content:'▼ '}
+.csv-guide-body{margin-top:10px;color:var(--gray500);line-height:1.6}
+.csv-cols{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.csv-col{background:var(--w);border:1px solid var(--gray200);border-radius:5px;padding:2px 9px;font-size:12px}
+
+/* Demo section */
+.demo-section{max-width:960px;margin:32px auto 0;padding:0 22px 48px}
+.divider{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--gray200)}
+.divider span{font-size:12px;font-weight:700;color:var(--gray400);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.demo-row{display:flex;gap:10px;flex-wrap:wrap}
+.demo-card{flex:1;min-width:150px;background:var(--w);border:1.5px solid var(--g200);
+           border-radius:10px;padding:14px 15px;cursor:pointer;transition:.15s}
+.demo-card:hover{border-color:var(--g500);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.dc-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.dc-role{font-size:12px;color:var(--gray400)}
+.dc-score{font-size:12px;font-weight:700;color:var(--g600);margin-top:6px}
+
+/* How section */
+.how{background:var(--w);border-top:1px solid var(--g100);padding:52px 22px}
+.how-inner{max-width:800px;margin:0 auto;text-align:center}
+.how h2{font-size:28px;font-weight:800;margin-bottom:8px}
+.how p{font-size:15px;color:var(--gray500);margin-bottom:36px}
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+@media(max-width:600px){.how-steps{grid-template-columns:1fr}}
+.step .num{width:42px;height:42px;border-radius:50%;background:var(--g600);color:#fff;
+           font-weight:900;font-size:17px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.step h3{font-size:15px;font-weight:700;margin-bottom:5px}
+.step p{font-size:13px;color:var(--gray500);line-height:1.6}
+
+/* ═══ SCORE PAGE ═══ */
+#score-pg{display:none;padding:22px 0 52px}
+
+.err-box{background:#fff5f5;border:2px solid #fecaca;border-radius:10px;
+         padding:18px;margin-bottom:18px;display:none}
+.err-box h4{color:var(--red);margin-bottom:8px;font-size:15px}
+.err-box pre{font-size:12px;color:var(--gray600);white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto}
+
+.page-hdr{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.page-hdr h2{font-size:19px;font-weight:700;flex:1;min-width:120px}
+.pacc{background:var(--g100);color:var(--g800);padding:5px 13px;border-radius:99px;font-size:13px;font-weight:600}
+.pper{font-size:13px;color:var(--gray400)}
+
+/* Score hero 3-col */
+.score-hero{display:grid;grid-template-columns:240px 1fr 265px;gap:18px;margin-bottom:20px}
+@media(max-width:1020px){.score-hero{grid-template-columns:1fr 1fr}}
+
+/* Gauge */
+.gauge-card{display:flex;flex-direction:column;align-items:center;padding:26px 18px;text-align:center}
+.g-num{font-size:54px;font-weight:900;line-height:1;margin-top:4px}
+.g-of{font-size:13px;color:var(--gray400);margin-top:2px}
+.g-grade{font-size:18px;font-weight:800;margin-top:6px}
+.g-pct{font-size:12px;color:var(--gray400);margin-top:3px}
+.g-risk{font-size:12px;font-weight:700;padding:5px 14px;border-radius:99px;margin-top:10px;display:inline-block}
+/* Score bands */
+.bands{display:flex;gap:5px;margin-top:14px;width:100%}
+.band{flex:1;text-align:center;border-radius:7px;padding:6px 3px;border:2px solid transparent}
+.band-r{font-size:12px;font-weight:900}
+.band-l{font-size:9px;font-weight:700;margin-top:1px}
+
+/* Stat boxes */
+.sbox{background:var(--g50);border:1px solid var(--g100);border-radius:9px;padding:13px}
+.sv{font-size:21px;font-weight:800;line-height:1.2}
+.sl{font-size:11px;color:var(--gray400);margin-top:2px}
+
+/* Interpretation card */
+.icard{border-radius:var(--r);padding:22px}
+.ititle{font-size:17px;font-weight:800;margin-bottom:10px}
+.idesc{font-size:13px;line-height:1.65;margin-bottom:14px}
+.inext{border-radius:8px;padding:11px 13px;background:rgba(255,255,255,.55);font-size:13px;line-height:1.55}
+.inext b{display:block;margin-bottom:4px;font-size:13px}
+
+/* Recommendations */
+.rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.rec-grid{grid-template-columns:1fr}}
+.rch{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.rec{display:flex;gap:11px;padding:12px;border-radius:9px;margin-bottom:9px;border:1px solid}
+.rec-do{background:#f0fdf4;border-color:var(--g200)}
+.rec-dont{background:#fff5f5;border-color:#fecaca}
+.rec-ico{font-size:19px;line-height:1;flex-shrink:0;padding-top:1px}
+.rec-name{font-size:13px;font-weight:700;color:var(--gray800);margin-bottom:3px}
+.rec-desc{font-size:12px;color:var(--gray500);line-height:1.5}
+.rec-pri{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px;margin-top:5px}
+.pri-high{background:#fee2e2;color:#991b1b}
+.pri-medium{background:#fef9c3;color:#92400e}
+.pri-low{background:var(--g100);color:var(--g700)}
+
+/* Component list */
+.comp{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--g50)}
+.comp:last-child{border-bottom:none}
+.ci{flex:1;min-width:0}
+.cn{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--gray800);margin-bottom:5px}
+.cb-bg{height:7px;background:var(--g100);border-radius:4px;overflow:hidden;margin-bottom:4px}
+.cb-f{height:7px;border-radius:4px}
+.cins{font-size:11px;color:var(--gray400);line-height:1.4}
+.cimp{font-size:11px;color:var(--g600);margin-top:3px}
+
+/* Chart */
+.ch-wrap{position:relative;width:100%;height:230px}
+
+/* Category list */
+.cat-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--g50)}
+.cat-row:last-child{border-bottom:none}
+.cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cat-name{flex:1;font-size:13px;color:var(--gray600);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-bar{height:5px;background:var(--gray100);border-radius:3px;flex-shrink:0;width:80px;overflow:hidden}
+.cat-bar-f{height:5px;border-radius:3px}
+.cat-amt{font-size:13px;font-weight:700;min-width:72px;text-align:right}
+
+/* Loans */
+.loan{display:flex;align-items:center;gap:11px;padding:11px;border-radius:9px;
+      border:1px solid var(--g100);margin-bottom:9px;background:var(--g50)}
+.loan.no{background:var(--gray50);border-color:var(--gray200);opacity:.5}
+.loan-ico{font-size:20px;line-height:1}
+.loan-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.loan-det{font-size:12px;color:var(--gray400)}
+
+/* What-If */
+.wi-layout{display:grid;grid-template-columns:1fr 200px;gap:28px;align-items:center}
+@media(max-width:640px){.wi-layout{grid-template-columns:1fr}}
+.sg{margin-bottom:18px}
+.sg-label{display:flex;justify-content:space-between;font-size:13px;font-weight:500;
+          color:var(--gray700);margin-bottom:6px}
+.sg-val{color:var(--g600);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--g500);cursor:pointer;margin:0}
+.wi-result{text-align:center}
+.wi-big{font-size:54px;font-weight:900;line-height:1}
+.wi-delta{font-size:15px;font-weight:700;margin-top:6px}
+.wi-msg{font-size:12px;color:var(--gray400);margin-top:10px;line-height:1.5}
+
+/* Table */
+.tbl-filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.finp{padding:8px 12px;border:1.5px solid var(--gray200);border-radius:7px;font-size:13px;
+      color:var(--gray800);background:var(--w);outline:none;font-family:inherit}
+.finp:focus{border-color:var(--g400)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:9px 13px;text-align:left;font-size:11px;font-weight:700;color:var(--gray500);
+   background:var(--g50);border-bottom:1px solid var(--g100);text-transform:uppercase;
+   letter-spacing:.06em;white-space:nowrap}
+td{padding:10px 13px;border-bottom:1px solid var(--g50);color:var(--gray600);white-space:nowrap}
+tr:hover td{background:var(--g50)}
+tr.is-late td:first-child{border-left:3px solid var(--red)}
+.cr{color:#15803d;font-weight:700}.dr{color:#dc2626;font-weight:700}
+.ttag{font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600}
+.late-pill{background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700}
+.pg-wrap{display:flex;gap:5px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+.pg-btn{width:30px;height:30px;border:1.5px solid var(--gray200);background:var(--w);border-radius:6px;
+        display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:500;transition:.12s}
+.pg-btn:hover,.pg-btn.on{background:var(--g600);color:#fff;border-color:var(--g600)}
+.tbl-info{font-size:12px;color:var(--gray400);margin-top:7px}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--g300);border-radius:3px}
+::-webkit-scrollbar-track{background:var(--g50)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="goHome()">
+    <div class="logo-box">C</div>CreditIQ
+  </div>
+  <div class="nav-right">
+    <span class="badge" id="nav-badge" style="display:none"></span>
+    <button class="btn btn-outline" id="nav-back" style="display:none" onclick="goHome()">← New Analysis</button>
+  </div>
+</nav>
+
+<!-- ═══════ HOME ═══════ -->
+<div id="home-pg">
+
+  <div class="hero">
+    <h1>Your <em>Pre-CIBIL Score</em><br/>From Bank Statement</h1>
+    <p>Upload your last 18+ months bank statement CSV. Get instant 0–100 score with personalised advice.</p>
+  </div>
+
+  <!-- UPLOAD ZONE -->
+  <div class="upload-wrap">
+
+    <div class="drop-zone" id="drop-zone"
+         ondragover="ev.preventDefault();ev.target.closest('.drop-zone').classList.add('drag')"
+         ondragleave="ev.target.closest('.drop-zone')?.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Drop your bank statement here</div>
+      <div class="drop-sub">CSV file · Last 18+ months of transactions</div>
+      <button class="btn btn-green" type="button"
+              onclick="event.stopPropagation();document.getElementById('csv-file').click()">
+        Choose CSV File
+      </button>
+      <div class="supported">
+        <span class="bank-tag">SBI</span><span class="bank-tag">HDFC</span>
+        <span class="bank-tag">ICICI</span><span class="bank-tag">Axis</span>
+        <span class="bank-tag">Kotak</span><span class="bank-tag">Any Indian Bank</span>
+      </div>
+    </div>
+
+    <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleFileSelect(event)"/>
+
+    <!-- File status -->
+    <div class="file-status">
+
+      <!-- Success state -->
+      <div class="fbox fbox-ok" id="fbox-ok">
+        <div class="frow">✅ &nbsp;<span id="fval-count">0</span> transactions loaded</div>
+        <div class="frow">📅 &nbsp;Period: <strong id="fval-period">—</strong></div>
+        <div class="frow">📊 &nbsp;Columns mapped: <strong id="fval-cols">—</strong></div>
+      </div>
+
+      <!-- Error state -->
+      <div class="fbox fbox-err" id="fbox-err" id="fbox-err"></div>
+
+      <!-- Analyze button — shown after valid file -->
+      <div class="analyze-wrap" id="analyze-wrap">
+        <button class="btn btn-green" id="analyze-btn" onclick="runAnalysis()">
+          <span id="analyze-txt">🔍 Analyse My Statement</span>
+        </button>
+      </div>
+    </div>
+
+    <details class="csv-guide">
+      <summary>What columns does my CSV need?</summary>
+      <div class="csv-guide-body">
+        Your CSV must contain columns for <b>Date</b>, <b>Description</b>, and <b>Amount</b>.
+        Accepted column names (any bank format works):
+        <div class="csv-cols">
+          <span class="csv-col">Date / Txn Date / Transaction Date</span>
+          <span class="csv-col">Narration / Description / Particulars</span>
+          <span class="csv-col">Debit / Withdrawal / DR</span>
+          <span class="csv-col">Credit / Deposit / CR</span>
+          <span class="csv-col">Amount (with separate Type column)</span>
+          <span class="csv-col">Balance / Closing Balance</span>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- DEMO ACCOUNTS -->
+  <div class="demo-section">
+    <div class="divider"><span>Or try a demo profile</span></div>
+    <div class="demo-row" id="demo-row">
+      <div style="font-size:13px;color:var(--gray400);padding:8px">Loading demos…</div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how">
+    <div class="how-inner">
+      <h2>How It Works</h2>
+      <p>No credit bureau needed — 18 months of transaction intelligence.</p>
+      <div class="how-steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Upload CSV</h3>
+          <p>Export your bank statement as CSV. We need 18+ months for accurate scoring.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>ML Analysis</h3>
+          <p>Our model categorises every transaction across 20+ financial categories with 99% accuracy.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Your Score</h3>
+          <p>Get 0–100 pre-CIBIL score with personalised DO's, DON'Ts, loan eligibility and simulator.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /home-pg -->
+
+
+<!-- ═══════ SCORE PAGE ═══════ -->
+<div id="score-pg">
+<div class="wrap">
+
+  <div class="err-box" id="err-box">
+    <h4>⚠ Display Error — Server returned data but rendering failed</h4>
+    <pre id="err-msg-pre"></pre>
+    <button class="btn btn-ghost" style="margin-top:10px;font-size:13px" onclick="goHome()">← Go Back</button>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-hdr">
+    <button class="btn btn-ghost" onclick="goHome()">← Back</button>
+    <h2 id="ph-name">—</h2>
+    <span class="pacc" id="ph-acc">—</span>
+    <span class="pper" id="ph-per">—</span>
+    <span style="font-size:13px;color:var(--gray400)" id="ph-txns"></span>
+  </div>
+
+  <!-- SCORE HERO -->
+  <div class="score-hero">
+
+    <!-- Gauge card -->
+    <div class="card gauge-card">
+      <canvas id="cv-gauge" width="210" height="112"></canvas>
+      <div class="g-num" id="d-score" style="color:var(--g600)">—</div>
+      <div class="g-of">out of 100</div>
+      <div class="g-grade" id="d-grade" style="color:var(--g600)">—</div>
+      <div class="g-pct" id="d-pct">—</div>
+      <div class="g-risk" id="d-risk">—</div>
+      <div class="bands" id="d-bands"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card cp">
+      <div class="sec-head">Financial Snapshot</div>
+      <div class="g3" id="stats" style="gap:12px"></div>
+    </div>
+
+    <!-- Interpretation -->
+    <div class="card icard" id="icard">
+      <div class="ititle" id="ititle">—</div>
+      <div class="idesc"  id="idesc">—</div>
+      <div class="inext">
+        <b>💡 What to do next</b>
+        <span id="inext">—</span>
+      </div>
+    </div>
+
+  </div><!-- /score-hero -->
+
+  <!-- RECOMMENDATIONS -->
+  <div class="card cp" style="margin-bottom:18px">
+    <div class="sec-head">Personalised DO's &amp; DON'Ts</div>
+    <div class="rec-grid">
+      <div>
+        <div class="rch" style="color:var(--g600)">✅ DO These</div>
+        <div id="rec-do"></div>
+      </div>
+      <div>
+        <div class="rch" style="color:var(--red)">🚫 DON'T Do These</div>
+        <div id="rec-dont"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPONENTS + RADAR -->
+  <div class="g2" style="margin-bottom:18px">
+    <div class="card cp">
+      <div class="sec-head">Score Components</div>
+      <div id="comp-list"></div>
+    </div>
+    <div class="card cp">
+      <div class="sec-head">Radar Chart</div>
+      <canvas id="cv-radar" width="300" height="260" style="display:block;margin:0 auto"></canvas>
+    </div>
+  </div>
+
+  <!-- MONTHLY CHART -->
+  <div class="card cp" style="margin-bottom:18px">
+    <div class="sec-head">18-Month Income vs Expense</div>
+    <div class="ch-wrap"><canvas id="cv-monthly"></canvas></div>
+  </div>
+
+  <!-- CATEGORY + LOANS -->
+  <div class="g2" style="margin-bottom:18px">
+    <div class="card cp">
+      <div class="sec-head">Spending Breakdown</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+        <canvas id="cv-donut" width="170" height="170" style="flex-shrink:0"></canvas>
+        <div id="cat-list" style="flex:1;min-width:150px"></div>
+      </div>
+    </div>
+    <div class="card cp">
+      <div class="sec-head">Loan Eligibility</div>
+      <div id="loan-list"></div>
+    </div>
+  </div>
+
+  <!-- WHAT-IF -->
+  <div class="card cp" style="margin-bottom:18px">
+    <div class="sec-head">What-If Score Simulator</div>
+    <div class="wi-layout">
+      <div>
+        <div class="sg">
+          <div class="sg-label"><span>On-Time Payment Rate</span>
+            <span class="sg-val" id="wv1">90%</span></div>
+          <input type="range" id="ws1" min="0" max="100" value="90"
+                 oninput="wv1.textContent=this.value+'%';scheduleWI()"/>
+        </div>
+        <div class="sg">
+          <div class="sg-label"><span>Monthly SIP Investment</span>
+            <span class="sg-val" id="wv2">₹0</span></div>
+          <input type="range" id="ws2" min="0" max="20000" step="500" value="0"
+                 oninput="wv2.textContent='₹'+Number(this.value).toLocaleString('en-IN');scheduleWI()"/>
+        </div>
+        <div class="sg">
+          <div class="sg-label"><span>Savings Rate</span>
+            <span class="sg-val" id="wv3">20%</span></div>
+          <input type="range" id="ws3" min="0" max="50" value="20"
+                 oninput="wv3.textContent=this.value+'%'"/>
+        </div>
+        <button class="btn btn-ghost" style="font-size:13px" onclick="resetWI()">Reset</button>
+      </div>
+      <div class="wi-result">
+        <div style="font-size:11px;font-weight:700;color:var(--gray400);letter-spacing:.07em">PROJECTED SCORE</div>
+        <div class="wi-big" id="wi-s" style="color:var(--g600);margin-top:4px">—</div>
+        <div style="font-size:13px;color:var(--gray400)">/ 100</div>
+        <div class="wi-delta" id="wi-d"></div>
+        <div style="font-size:13px;color:var(--gray500);margin-top:3px" id="wi-g"></div>
+        <div class="wi-msg" id="wi-m">Adjust sliders to simulate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSACTION TABLE -->
+  <div class="card cp">
+    <div class="sec-head">Transaction History</div>
+    <div class="tbl-filters">
+      <input class="finp" id="tf-q" placeholder="Search…" oninput="filterT()" style="flex:1;max-width:210px"/>
+      <select class="finp" id="tf-cat" onchange="filterT()" style="max-width:180px">
+        <option value="">All Categories</option></select>
+      <select class="finp" id="tf-typ" onchange="filterT()" style="max-width:130px">
+        <option value="">All</option>
+        <option value="CREDIT">Credits</option>
+        <option value="DEBIT">Debits</option>
+      </select>
+      <button class="btn btn-outline" style="font-size:13px;padding:8px 13px" onclick="exportCSV()">⬇ CSV</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Date</th><th>Description</th><th>Category</th>
+          <th>Amount</th><th>Type</th><th>Balance</th><th>Status</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="pg-wrap" id="pg-wrap"></div>
+    <div class="tbl-info" id="tbl-info"></div>
+  </div>
+
+</div><!-- /wrap -->
+</div><!-- /score-pg -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONSTANTS & STATE
+═══════════════════════════════════════════════════════════ */
+const API = 'http://localhost:8000';
+const PER = 20;
+
+let DATA      = null;   // full API response
+let ALL_TXNS  = [];     // cleaned transactions
+let FILT_TXNS = [];     // filtered transactions
+let CUR_PAGE  = 1;
+let WI_TIMER  = null;
+let PARSED    = null;   // CSV parsed result
+
+const PALETTE = [
+  '#16a34a','#3b82f6','#f59e0b','#ef4444','#8b5cf6',
+  '#06b6d4','#f97316','#ec4899','#14b8a6','#64748b',
+  '#22c55e','#fbbf24','#a78bfa','#34d399','#60a5fa','#fb923c'
+];
+const BANDS = [
+  {lo:0,  hi:34, label:'Very Poor', c:'#dc2626', bg:'#fee2e2'},
+  {lo:35, hi:49, label:'Poor',      c:'#ea580c', bg:'#ffedd5'},
+  {lo:50, hi:64, label:'Fair',      c:'#ca8a04', bg:'#fef9c3'},
+  {lo:65, hi:79, label:'Good',      c:'#15803d', bg:'#d1fae5'},
+  {lo:80, hi:100,label:'Excellent', c:'#166534', bg:'#dcfce7'},
+];
+const CAT_C = {
+  SALARY:'#15803d', SIP:'#3b82f6', EMI_LOAN:'#dc2626',
+  BILL_PAYMENT:'#ca8a04', GROCERY:'#14b8a6', FOOD_DINING:'#f97316',
+  SHOPPING:'#8b5cf6', TRANSPORT:'#60a5fa', ENTERTAINMENT:'#ec4899',
+  HEALTHCARE:'#06b6d4', INSURANCE:'#22c55e', ATM_WITHDRAWAL:'#92400e',
+  INTEREST_DIVIDEND:'#16a34a', OTHER:'#9ca3af'
+};
+
+/* ═══════════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════════ */
+window.addEventListener('load', () => { loadDemos(); });
+
+function goHome() {
+  id('home-pg').style.display  = '';
+  id('score-pg').style.display = 'none';
+  id('nav-back').style.display = 'none';
+  id('nav-badge').style.display= 'none';
+  id('err-box').style.display  = 'none';
+}
+
+function showScorePg(label) {
+  id('home-pg').style.display  = 'none';
+  id('score-pg').style.display = 'block';
+  id('nav-back').style.display = '';
+  id('nav-badge').textContent  = label || 'Result';
+  id('nav-badge').style.display= '';
+  window.scrollTo(0, 0);
+}
+
+function id(x) { return document.getElementById(x); }
+
+/* ═══════════════════════════════════════════════════════════
+   DEMO CARDS
+═══════════════════════════════════════════════════════════ */
+async function loadDemos() {
+  try {
+    const r = await fetch(API + '/api/demo-accounts');
+    const d = await r.json();
+    const row = id('demo-row');
+    row.innerHTML = '';
+    (d.accounts || []).forEach(a => {
+      const el = document.createElement('div');
+      el.className = 'demo-card';
+      el.innerHTML = `<div class="dc-name">${a.name}</div>
+        <div class="dc-role">${a.profile}</div>
+        <div class="dc-score">${a.hint}</div>`;
+      el.onclick = () => runDemo(a.account, a.name);
+      row.appendChild(el);
+    });
+  } catch(e) {
+    id('demo-row').innerHTML = '<span style="font-size:13px;color:var(--gray400)">Start the server via start.bat to load demos</span>';
+  }
+}
+
+async function runDemo(acc, name) {
+  showScorePg(name);
+  id('err-box').style.display = 'none';
+  setLoadingState();
+  try {
+    const res = await fetch(API + '/api/score', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({account_number: acc, months: 18})
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e.detail || 'Server error '+res.status);
+    }
+    DATA = await res.json();
+    ALL_TXNS = DATA.transactions || [];
+    // Use double rAF: first frame shows page, second frame gives real canvas dimensions
+    requestAnimationFrame(() => requestAnimationFrame(() => safeRender()));
+  } catch(e) {
+    showRenderErr('Failed to load demo: ' + e.message);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV UPLOAD — FILE HANDLING
+═══════════════════════════════════════════════════════════ */
+function handleDrop(ev) {
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('drag');
+  const f = ev.dataTransfer.files[0];
+  if (f) processFile(f);
+}
+
+function handleFileSelect(ev) {
+  const f = ev.target.files[0];
+  if (f) processFile(f);
+}
+
+function processFile(file) {
+  if (!file.name.match(/\.csv$/i)) {
+    showFileErr('Please upload a .csv file');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload  = e => parseCSV(e.target.result, file.name);
+  reader.onerror = () => showFileErr('Could not read file');
+  reader.readAsText(file, 'UTF-8');
+}
+
+function showFileErr(msg) {
+  id('fbox-ok').style.display     = 'none';
+  id('analyze-wrap').style.display= 'none';
+  id('fbox-err').style.display    = 'block';
+  id('fbox-err').textContent      = '❌  ' + msg;
+  PARSED = null;
+}
+
+function showFileOk(txns, period, cols, filename) {
+  PARSED = { txns, filename };
+  id('fbox-err').style.display    = 'none';
+  id('fbox-ok').style.display     = 'block';
+  id('fval-count').textContent    = txns.length.toLocaleString();
+  id('fval-period').textContent   = period;
+  id('fval-cols').textContent     = cols;
+  id('analyze-wrap').style.display= 'block';
+  id('analyze-txt').textContent   = '🔍  Analyse My Statement';
+  id('analyze-btn').disabled      = false;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV PARSER — ROBUST VERSION
+   Key fixes vs previous:
+   1. col >= 0 guard before cells[col] (JS cells[-1] = undefined not last!)
+   2. Handles Indian number format (1,23,456.78)
+   3. Better column keyword matching
+   4. Handles blank / summary rows
+   5. Works with HDFC, SBI, ICICI, Axis, Kotak formats
+═══════════════════════════════════════════════════════════ */
+function parseCSV(text, filename) {
+  try {
+    // Normalise line endings, split, drop empty
+    const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n')
+                      .split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+
+    if (lines.length < 3) { showFileErr('File is too short — need at least a header row plus transactions'); return; }
+
+    // Detect delimiter: count commas vs tabs vs semicolons in first 5 lines
+    const sample = lines.slice(0,5).join('');
+    const delim  = sample.split('\t').length > sample.split(',').length ? '\t' : ',';
+
+    // Find the header row (first row with 2+ recognised keywords)
+    const HEADER_KW = ['date','narration','description','particular','debit','credit',
+                       'amount','withdrawal','deposit','balance','txn','transaction'];
+    let headerIdx = -1;
+    for (let i = 0; i < Math.min(lines.length, 20); i++) {
+      const low = lines[i].toLowerCase();
+      const hits = HEADER_KW.filter(k => low.includes(k)).length;
+      if (hits >= 2) { headerIdx = i; break; }
+    }
+    if (headerIdx < 0) { showFileErr('Could not find header row. Make sure your CSV has column names like Date, Description, Amount, Balance.'); return; }
+
+    // Parse header cells
+    const headers = csvSplitRow(lines[headerIdx], delim).map(h => h.toLowerCase().replace(/\s+/g,' ').trim());
+
+    // Map columns — returns index or -1
+    function findCol(...keywords) {
+      for (const kw of keywords) {
+        for (let i = 0; i < headers.length; i++) {
+          if (headers[i].includes(kw)) return i;
+        }
+      }
+      return -1;
+    }
+
+    const C = {
+      date:    findCol('txn date','transaction date','date','value date','posting date'),
+      desc:    findCol('narration','description','transaction detail','particulars','particular','details','remark'),
+      debit:   findCol('withdrawal amt','debit amt','withdrawal','debit'),
+      credit:  findCol('deposit amt','credit amt','deposit','credit'),
+      amount:  findCol('amount'),
+      type:    findCol('transaction type','cr/dr','type'),
+      balance: findCol('closing balance','available balance','balance'),
+    };
+
+    // Edge-case: if 'amount' col also matched debit/credit, prefer debit/credit
+    // If debit col == amount col, reset amount
+    if (C.debit === C.amount || C.credit === C.amount) C.amount = -1;
+
+    // Need at least date + desc + (debit|credit|amount)
+    const hasAmount = C.debit >= 0 || C.credit >= 0 || C.amount >= 0;
+    if (C.date < 0)   { showFileErr('No Date column found. Recognised names: Date, Txn Date, Transaction Date, Value Date'); return; }
+    if (C.desc < 0)   { showFileErr('No Description column found. Recognised names: Narration, Description, Particulars, Transaction Details'); return; }
+    if (!hasAmount)   { showFileErr('No Amount column found. Recognised names: Debit, Credit, Withdrawal, Deposit, Amount'); return; }
+
+    // Parse data rows
+    const txns = [];
+    let skipped = 0;
+
+    for (let i = headerIdx + 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line || line.length < 3) continue;
+
+      const cells = csvSplitRow(line, delim);
+      if (cells.length < Math.max(C.date, C.desc, C.balance) + 1) { skipped++; continue; }
+
+      // Date
+      const rawDate = safeCell(cells, C.date);
+      const dateStr = parseDate(rawDate);
+      if (!dateStr) { skipped++; continue; }
+
+      // Description
+      const desc = safeCell(cells, C.desc);
+      if (!desc || desc.length < 2) { skipped++; continue; }
+
+      // Amount + type
+      let amount = 0, type = 'DEBIT';
+
+      if (C.debit >= 0 || C.credit >= 0) {
+        // Separate debit / credit columns
+        const dAmt = C.debit  >= 0 ? parseAmount(safeCell(cells, C.debit))  : 0;
+        const cAmt = C.credit >= 0 ? parseAmount(safeCell(cells, C.credit)) : 0;
+
+        if (cAmt > 0 && dAmt === 0)      { amount = cAmt; type = 'CREDIT'; }
+        else if (dAmt > 0 && cAmt === 0) { amount = dAmt; type = 'DEBIT';  }
+        else if (cAmt > 0)               { amount = cAmt; type = 'CREDIT'; }
+        else if (dAmt > 0)               { amount = dAmt; type = 'DEBIT';  }
+        else { skipped++; continue; } // both zero → skip
+
+      } else {
+        // Single amount column
+        const raw = safeCell(cells, C.amount);
+        const num = parseAmount(raw);
+        if (num === 0) { skipped++; continue; }
+
+        amount = Math.abs(num);
+        if (C.type >= 0) {
+          const ti = safeCell(cells, C.type).toUpperCase();
+          type = (ti.startsWith('CR') || ti === 'CREDIT' || ti === 'C') ? 'CREDIT' : 'DEBIT';
+        } else {
+          type = num < 0 ? 'DEBIT' : 'CREDIT';
+        }
+      }
+
+      if (amount <= 0) { skipped++; continue; }
+
+      const balance = C.balance >= 0 ? parseAmount(safeCell(cells, C.balance)) : 0;
+
+      txns.push({ date: dateStr, description: desc, amount: r2(amount), type, balance_after: r2(Math.abs(balance)) });
+    }
+
+    // Minimum count
+    if (txns.length < 30) {
+      showFileErr(`Only ${txns.length} valid transactions found (${skipped} rows skipped). Need at least 30. Check that your CSV has proper Debit/Credit or Amount columns.`);
+      return;
+    }
+
+    // Date range check
+    const sortedDates = txns.map(t=>t.date).sort();
+    const d0  = new Date(sortedDates[0]);
+    const d1  = new Date(sortedDates[sortedDates.length-1]);
+    const mos = (d1.getFullYear()-d0.getFullYear())*12 + d1.getMonth()-d0.getMonth();
+
+    if (mos < 17) {
+      showFileErr(`Data spans only ${mos} months (${sortedDates[0]} → ${sortedDates[sortedDates.length-1]}). Need at least 18 months for accurate scoring.`);
+      return;
+    }
+
+    // Columns found string
+    const colsFound = [
+      'Date', C.desc>=0?'Description':'', C.debit>=0?'Debit':'',
+      C.credit>=0?'Credit':'', C.amount>=0?'Amount':'', C.balance>=0?'Balance':''
+    ].filter(Boolean).join(', ');
+
+    showFileOk(txns, `${sortedDates[0]} → ${sortedDates[sortedDates.length-1]} (${mos} months)`,
+               colsFound, filename);
+
+  } catch(e) {
+    showFileErr('Parse error: ' + e.message + '. Try saving your CSV with commas as separator.');
+  }
+}
+
+// Safe cell accessor — NEVER uses negative index
+function safeCell(cells, idx) {
+  if (idx < 0 || idx >= cells.length) return '';
+  return (cells[idx] || '').trim();
+}
+
+// Split one CSV row respecting quoted fields
+function csvSplitRow(row, delim) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (const ch of row) {
+    if (ch === '"') { inQ = !inQ; }
+    else if (ch === delim && !inQ) { result.push(cur.trim()); cur = ''; }
+    else { cur += ch; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+// Parse date from multiple formats
+function parseDate(raw) {
+  if (!raw) return null;
+  raw = raw.trim().replace(/\s+/g,' ');
+  const MN = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  let m;
+
+  // YYYY-MM-DD or YYYY/MM/DD
+  m = raw.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if (m) return `${m[1]}-${z(m[2])}-${z(m[3])}`;
+
+  // DD-MM-YYYY or DD/MM/YYYY
+  m = raw.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if (m) return `${m[3]}-${z(m[2])}-${z(m[1])}`;
+
+  // DD MMM YYYY or DD-MMM-YYYY or DD/MMM/YYYY (e.g. "01 Jan 2023", "01-Jan-23")
+  m = raw.match(/^(\d{1,2})[\s\-\/]([A-Za-z]{3})[\s\-\/](\d{2,4})$/);
+  if (m) {
+    const mo = MN[m[2].toLowerCase()];
+    if (mo) {
+      let yr = m[3].length===2 ? (parseInt(m[3])>50?'19':'20')+m[3] : m[3];
+      return `${yr}-${z(mo)}-${z(m[1])}`;
+    }
+  }
+
+  // MMM DD YYYY (e.g. "Jan 01 2023")
+  m = raw.match(/^([A-Za-z]{3})\s+(\d{1,2})[,\s]+(\d{4})$/);
+  if (m) {
+    const mo = MN[m[1].toLowerCase()];
+    if (mo) return `${m[3]}-${z(mo)}-${z(m[2])}`;
+  }
+
+  return null;
+}
+
+// Parse monetary amount — handles Indian format like "1,23,456.78" and "₹1,000"
+function parseAmount(raw) {
+  if (!raw) return 0;
+  const cleaned = raw.replace(/[₹$,\s]/g, '');
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? 0 : num;
+}
+
+function z(n) { return String(n).padStart(2,'0'); }
+function r2(n) { return Math.round(n*100)/100; }
+
+/* ═══════════════════════════════════════════════════════════
+   ANALYZE CSV → API
+═══════════════════════════════════════════════════════════ */
+async function runAnalysis() {
+  if (!PARSED || !PARSED.txns.length) { showFileErr('No valid transactions to analyse'); return; }
+
+  const btn = id('analyze-btn');
+  const txt = id('analyze-txt');
+  txt.innerHTML = '<span class="spin"></span>  Analysing…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(API + '/api/analyze', {
+      method:  'POST',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify({
+        transactions:   PARSED.txns,
+        account_holder: PARSED.filename.replace(/\.csv$/i,'').substring(0,40)
+      })
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e.detail || 'Server returned error '+res.status);
+    }
+
+    DATA     = await res.json();
+    ALL_TXNS = DATA.transactions || [];
+
+    showScorePg(PARSED.filename.replace(/\.csv$/i,'').substring(0,25));
+    id('err-box').style.display = 'none';
+    setLoadingState();
+
+    // Double rAF so score page is visible and canvas has real width
+    requestAnimationFrame(() => requestAnimationFrame(() => safeRender()));
+
+  } catch(e) {
+    showFileErr('Analysis failed: ' + e.message + '. Make sure the server is running (start.bat).');
+  } finally {
+    txt.textContent = '🔍  Analyse My Statement';
+    btn.disabled = false;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOADING PLACEHOLDER
+═══════════════════════════════════════════════════════════ */
+function setLoadingState() {
+  id('d-score').textContent = '…';
+  id('d-grade').textContent = '';
+  id('d-pct').textContent   = '';
+  id('d-risk').textContent  = '';
+  id('stats').innerHTML     = Array(6).fill('<div class="sbox" style="height:66px;background:var(--gray100)"></div>').join('');
+  id('comp-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--gray400)">Calculating…</div>';
+  id('rec-do').innerHTML    = '';
+  id('rec-dont').innerHTML  = '';
+  id('loan-list').innerHTML = '';
+  id('tbody').innerHTML     = '';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SAFE RENDER — wraps renderAll in try/catch
+═══════════════════════════════════════════════════════════ */
+function safeRender() {
+  try {
+    renderAll();
+    id('err-box').style.display = 'none';
+  } catch(e) {
+    console.error('Render error:', e);
+    showRenderErr(e.message + (e.stack ? '\n\n' + e.stack.substring(0,600) : ''));
+  }
+}
+
+function showRenderErr(msg) {
+  id('err-box').style.display  = 'block';
+  id('err-msg-pre').textContent = msg;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════════════════════════ */
+function renderAll() {
+  if (!DATA) throw new Error('No data');
+  if (DATA.score === undefined || DATA.score === null) throw new Error('Missing score in response');
+
+  const score = DATA.score;
+  const col   = DATA.grade_color || '#16a34a';
+  const bg    = DATA.grade_bg    || '#dcfce7';
+  const interp= DATA.interpretation || {};
+  const fs    = DATA.financial_summary || {};
+
+  /* ── header ── */
+  id('ph-name').textContent = DATA.account_holder  || '';
+  id('ph-acc').textContent  = DATA.account_number  || '';
+  id('ph-per').textContent  = DATA.analysis_period || '';
+  id('ph-txns').textContent = (DATA.total_transactions||0).toLocaleString()+' transactions';
+
+  /* ── gauge ── */
+  drawGauge(score, col);
+  id('d-score').textContent = score;
+  id('d-score').style.color = col;
+  id('d-grade').textContent = DATA.grade || '';
+  id('d-grade').style.color = col;
+  id('d-pct').textContent   = 'Better than '+pctFromScore(score)+'% of applicants';
+  const riskEl = id('d-risk');
+  riskEl.textContent         = interp.risk_level || riskLabel(score);
+  riskEl.style.background    = col+'22';
+  riskEl.style.color         = col;
+
+  /* ── score bands ── */
+  id('d-bands').innerHTML = BANDS.map(b => {
+    const on = score>=b.lo && score<=b.hi;
+    return `<div class="band" style="background:${b.bg};color:${b.c};border-color:${on?b.c:'transparent'};
+      ${on?'transform:scale(1.08);box-shadow:0 2px 8px '+b.c+'44':'opacity:.5'}">
+      <div class="band-r">${b.lo}–${b.hi}</div>
+      <div class="band-l">${b.label}</div></div>`;
+  }).join('');
+
+  /* ── interpretation card ── */
+  const ic = id('icard');
+  ic.style.background = bg;
+  ic.style.border     = '1px solid '+col+'55';
+  id('ititle').textContent = interp.title       || '';
+  id('ititle').style.color = col;
+  id('idesc').textContent  = interp.description || '';
+  id('inext').textContent  = interp.next_step   || '';
+
+  /* ── stats ── */
+  const c100 = p => p>=90?'#15803d':p>=70?'#ca8a04':'#dc2626';
+  id('stats').innerHTML = `
+    <div class="sbox"><div class="sv">₹${fmt(fs.avg_monthly_income)}</div><div class="sl">Avg Monthly Income</div></div>
+    <div class="sbox"><div class="sv" style="color:${fs.avg_monthly_savings>=0?'#15803d':'#dc2626'}">₹${fmt(Math.abs(fs.avg_monthly_savings))}</div><div class="sl">Monthly ${fs.avg_monthly_savings>=0?'Savings':'Deficit'}</div></div>
+    <div class="sbox"><div class="sv" style="color:${c100(fs.on_time_pct||0)}">${fs.on_time_pct||0}%</div><div class="sl">On-Time Payments</div></div>
+    <div class="sbox"><div class="sv" style="color:${(fs.late_count||0)===0?'#15803d':'#dc2626'}">${fs.late_count||0}</div><div class="sl">Late Payments</div></div>
+    <div class="sbox"><div class="sv">${fs.savings_rate_pct||0}%</div><div class="sl">Savings Rate</div></div>
+    <div class="sbox"><div class="sv" style="color:${fs.has_sip?'#15803d':'#dc2626'}">${fs.has_sip?'✓ Active':'✗ None'}</div><div class="sl">SIP Investment</div></div>`;
+
+  /* ── recommendations ── */
+  renderRecs(score, fs);
+
+  /* ── components + radar ── */
+  const comps = DATA.components || [];
+  id('comp-list').innerHTML = comps.map(c => {
+    const cc = scoreCol(c.score);
+    return `<div class="comp">
+      <div class="ci">
+        <div class="cn"><span>${c.name}</span><span style="color:${cc}">${Math.round(c.score)}/100</span></div>
+        <div class="cb-bg"><div class="cb-f" style="width:${c.score}%;background:${cc}"></div></div>
+        <div class="cins">${c.insight||''}</div>
+        <div class="cimp">→ ${c.improvement||''}</div>
+      </div></div>`;
+  }).join('');
+  drawRadar(comps);
+
+  /* ── monthly chart ── */
+  drawMonthly(DATA.monthly_summary || []);
+
+  /* ── category ── */
+  const cats = DATA.category_summary || [];
+  drawDonut(cats);
+  renderCatList(cats);
+
+  /* ── loans ── */
+  id('loan-list').innerHTML = (DATA.loan_eligibility || []).map(l =>
+    `<div class="loan ${l.eligible?'':'no'}">
+      <div class="loan-ico">${l.eligible?'✅':'❌'}</div>
+      <div><div class="loan-name">${l.product}</div>
+      <div class="loan-det">${l.eligible?'Max: '+l.max_amount+' · Rate: '+l.rate:'Not eligible at current score'}</div></div>
+    </div>`).join('');
+
+  /* ── what-if seed ── */
+  id('ws1').value = fs.on_time_pct || 90;
+  id('wv1').textContent = (fs.on_time_pct||90)+'%';
+  id('ws2').value = Math.round((fs.sip_monthly_avg||0)/500)*500;
+  id('wv2').textContent = '₹'+Number(id('ws2').value).toLocaleString('en-IN');
+  id('ws3').value = fs.savings_rate_pct || 20;
+  id('wv3').textContent = (fs.savings_rate_pct||20)+'%';
+  id('wi-s').textContent = score;
+  id('wi-s').style.color = col;
+  id('wi-g').textContent = DATA.grade || '';
+  id('wi-d').textContent = '';
+  id('wi-m').textContent = 'Adjust sliders to simulate';
+
+  /* ── table ── */
+  populateCatFilter();
+  FILT_TXNS = ALL_TXNS;
+  CUR_PAGE  = 1;
+  renderTable();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RECOMMENDATIONS ENGINE
+═══════════════════════════════════════════════════════════ */
+function renderRecs(score, fs) {
+  const dos = [], donts = [];
+  const late = fs.late_count || 0;
+  const sr   = fs.savings_rate_pct || 0;
+  const dti  = fs.dti_pct || 0;
+
+  if (late > 0) {
+    donts.push({ico:'🔴', name:'Stop paying bills late', pri:'high',
+      desc:`You have ${late} late payment(s). Each one can drop your score by 5–10 points.`});
+    dos.push({ico:'⚡', name:'Enable auto-debit for all bills', pri:'high',
+      desc:'Set up auto-pay on your bank app for EMIs, credit card, utilities so you never miss a due date.'});
+  } else {
+    dos.push({ico:'✅', name:'Maintain your perfect payment record', pri:'low',
+      desc:'Zero late payments — your strongest asset. Never miss a due date even when cash is tight.'});
+  }
+
+  if (!fs.has_sip) {
+    dos.push({ico:'📈', name:'Start a monthly SIP today', pri: score<65?'high':'medium',
+      desc:'Even ₹500/month in a mutual fund SIP significantly improves your investment score and builds wealth.'});
+  } else {
+    dos.push({ico:'📊', name:'Increase SIP by 10% each year', pri:'low',
+      desc:`You invest ₹${fmt(fs.sip_monthly_avg||0)}/month. Growing it 10% annually compounds dramatically.`});
+  }
+
+  if (sr < 10) {
+    donts.push({ico:'💸', name:"Don't spend your entire income", pri:'high',
+      desc:`Saving only ${sr}% monthly. Target 20%+. Track and cut discretionary spending now.`});
+  } else if (sr < 20) {
+    dos.push({ico:'🏦', name:'Push savings rate above 20%', pri:'medium',
+      desc:`You save ${sr}%. Getting above 20% unlocks a better savings score and faster financial safety net.`});
+  } else {
+    dos.push({ico:'💰', name:'Invest surplus savings', pri:'low',
+      desc:`Great ${sr}% savings rate. Move surplus into liquid mutual funds — better than a savings account.`});
+  }
+
+  if (dti > 50) {
+    donts.push({ico:'🚫', name:'Take no new loans right now', pri:'high',
+      desc:`Debt-to-income is ${dti}% — critically high. Any new EMI pushes you toward default risk.`});
+  } else if (dti > 35) {
+    donts.push({ico:'⚠️', name:'Avoid adding new EMIs', pri:'medium',
+      desc:`DTI is ${dti}%. Healthy limit is under 35%. Prepay existing loans before taking new credit.`});
+  } else if (dti > 0) {
+    dos.push({ico:'📉', name:'Prepay your highest-interest loan', pri:'low',
+      desc:`DTI is a healthy ${dti}%. Prepaying your costliest loan saves interest and boosts your score.`});
+  }
+
+  if (score < 50) {
+    donts.push({ico:'💳', name:'Avoid applying to multiple lenders', pri:'high',
+      desc:'Multiple credit applications in a short period lower your score further via hard inquiries.'});
+    dos.push({ico:'🔑', name:'Get a secured credit card', pri:'medium',
+      desc:'A secured card (backed by a fixed deposit) is the easiest way to rebuild credit at any score.'});
+  }
+
+  if (score >= 80) {
+    dos.push({ico:'🏠', name:'Negotiate best interest rates', pri:'low',
+      desc:'With 80+ score you have maximum lender negotiating power. Always ask for their lowest rate.'});
+  }
+
+  if (!fs.has_emi) {
+    dos.push({ico:'🧾', name:'Consider a small credit product', pri:'low',
+      desc:'Having no loan history can limit scoring. A small personal loan repaid on time builds credit track record.'});
+  }
+
+  const makeRec = (r, isDo) => `
+    <div class="rec ${isDo?'rec-do':'rec-dont'}">
+      <div class="rec-ico">${r.ico}</div>
+      <div>
+        <div class="rec-name">${r.name}</div>
+        <div class="rec-desc">${r.desc}</div>
+        <span class="rec-pri pri-${r.pri}">${r.pri.toUpperCase()} PRIORITY</span>
+      </div>
+    </div>`;
+
+  id('rec-do').innerHTML   = dos.slice(0,5).map(r=>makeRec(r,true)).join('');
+  id('rec-dont').innerHTML = donts.slice(0,5).map(r=>makeRec(r,false)).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS — GAUGE
+═══════════════════════════════════════════════════════════ */
+function drawGauge(score, col) {
+  const cv = id('cv-gauge'); if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height, cx=W/2, cy=H-6, R=H-14;
+  ctx.clearRect(0,0,W,H);
+
+  const zones=[[0,.35,'#fecaca'],[.35,.5,'#fed7aa'],[.5,.65,'#fef08a'],[.65,.8,'#bbf7d0'],[.8,1,'#86efac']];
+  zones.forEach(([f,t,c]) => {
+    ctx.beginPath(); ctx.arc(cx,cy,R, Math.PI*(1+f), Math.PI*(1+t));
+    ctx.lineWidth=18; ctx.strokeStyle=c; ctx.stroke();
+  });
+  if (score > 0) {
+    ctx.beginPath(); ctx.arc(cx,cy,R, Math.PI, Math.PI*(1+score/100));
+    ctx.lineWidth=18; ctx.strokeStyle=col; ctx.lineCap='round'; ctx.stroke();
+  }
+  const a=Math.PI*(1+score/100);
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+(R-3)*Math.cos(a), cy+(R-3)*Math.sin(a));
+  ctx.lineWidth=3; ctx.strokeStyle='#374151'; ctx.lineCap='round'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,6,0,2*Math.PI); ctx.fillStyle='#374151'; ctx.fill();
+  ctx.font='10px Segoe UI'; ctx.fillStyle='#9ca3af'; ctx.textAlign='center';
+  ctx.fillText('0',   cx-R-6, cy+4);
+  ctx.fillText('100', cx+R+8, cy+4);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS — RADAR
+═══════════════════════════════════════════════════════════ */
+function drawRadar(comps) {
+  if (!comps.length) return;
+  const cv=id('cv-radar'); if (!cv) return;
+  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const cx=W/2, cy=H/2+8, R=Math.min(W,H)/2-52, N=comps.length;
+  ctx.clearRect(0,0,W,H);
+
+  const ang=i=>-Math.PI/2+2*Math.PI*i/N;
+  const pt=(i,r)=>[cx+r*Math.cos(ang(i)), cy+r*Math.sin(ang(i))];
+
+  [20,40,60,80,100].forEach(v=>{
+    ctx.beginPath();
+    comps.forEach((_,i)=>{const[x,y]=pt(i,R*v/100); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+    ctx.closePath(); ctx.strokeStyle='#d1fae5'; ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle='rgba(240,253,244,.3)'; ctx.fill();
+  });
+  comps.forEach((_,i)=>{
+    const[x,y]=pt(i,R);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.strokeStyle='#bbf7d0';ctx.lineWidth=1;ctx.stroke();
+  });
+  ctx.beginPath();
+  comps.forEach((c,i)=>{const[x,y]=pt(i,R*c.score/100);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.closePath(); ctx.fillStyle='rgba(22,163,74,.18)'; ctx.fill();
+  ctx.strokeStyle='#16a34a'; ctx.lineWidth=2.5; ctx.stroke();
+  comps.forEach((c,i)=>{
+    const[x,y]=pt(i,R*c.score/100);
+    ctx.beginPath();ctx.arc(x,y,5,0,2*Math.PI);ctx.fillStyle='#16a34a';ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+  });
+  ctx.font='bold 11px Segoe UI'; ctx.fillStyle='#374151';
+  comps.forEach((c,i)=>{
+    const[x,y]=pt(i,R+30); ctx.textAlign='center';
+    const ws=c.name.split(' ');
+    ws.length>2?(ctx.fillText(ws.slice(0,2).join(' '),x,y),ctx.fillText(ws.slice(2).join(' '),x,y+13))
+               :ctx.fillText(c.name,x,y+(c.name.length>12?0:6));
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS — MONTHLY BAR CHART
+═══════════════════════════════════════════════════════════ */
+function drawMonthly(monthly) {
+  const cv=id('cv-monthly'); if (!cv||!monthly.length) return;
+  cv.width =cv.parentElement.offsetWidth||800;
+  cv.height=230;
+  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const P={t:14,r:16,b:52,l:72}, cW=W-P.l-P.r, cH=H-P.t-P.b;
+  ctx.clearRect(0,0,W,H);
+
+  const maxV=Math.max(...monthly.flatMap(m=>[m.income||0,m.expense||0]),1)*1.12;
+  const yS=v=>cH-(v/maxV)*cH;
+  const bW=Math.max(3,cW/monthly.length*0.33);
+  const xOf=i=>P.l+(monthly.length<2?cW/2:i/(monthly.length-1)*cW);
+
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y=P.t+yS(maxV*f);
+    ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(W-P.r,y);
+    ctx.strokeStyle='#f0fdf4';ctx.lineWidth=1;ctx.stroke();
+    ctx.font='10px Segoe UI';ctx.fillStyle='#9ca3af';ctx.textAlign='right';
+    ctx.fillText('₹'+fmtK(maxV*f),P.l-5,y+3);
+  });
+
+  monthly.forEach((m,i)=>{
+    const xC=xOf(i);
+    rr(ctx, xC-bW-1, P.t+yS(m.income||0),  bW, ((m.income||0)/maxV)*cH,  'rgba(22,163,74,.8)');
+    rr(ctx, xC+1,    P.t+yS(m.expense||0), bW, ((m.expense||0)/maxV)*cH, 'rgba(220,38,38,.7)');
+    if (i%Math.ceil(monthly.length/9)===0||i===monthly.length-1) {
+      const ym=m.ym||'';
+      const [yr,mo]=(ym.length===7?ym:m.month||'2024-01').split(ym.length===7?'-':' ');
+      const MNS=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const lbl=ym.length===7?MNS[parseInt(mo)]+(yr?'\''+yr.slice(2):''):(m.month||'').substring(0,6);
+      ctx.font='10px Segoe UI';ctx.fillStyle='#9ca3af';ctx.textAlign='center';
+      ctx.fillText(lbl,xC,H-P.b+16);
+    }
+  });
+
+  ctx.beginPath();ctx.setLineDash([4,3]);
+  monthly.forEach((m,i)=>{
+    const x=xOf(i), y=P.t+yS(Math.max(0,m.net||0));
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=2.5;ctx.stroke();ctx.setLineDash([]);
+
+  [[0,'rgba(22,163,74,.8)','Income'],[80,'rgba(220,38,38,.7)','Expense'],[170,'#f59e0b','Net Savings']].forEach(([dx,c,lbl])=>{
+    ctx.fillStyle=c;ctx.fillRect(P.l+dx,H-13,12,9);
+    ctx.font='11px Segoe UI';ctx.fillStyle='#6b7280';ctx.textAlign='left';
+    ctx.fillText(lbl,P.l+dx+15,H-4);
+  });
+}
+
+function rr(ctx,x,y,w,h,c){
+  if(h<=0||w<=0)return;
+  const r=Math.min(3,w/2,h/2);
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();ctx.fillStyle=c;ctx.fill();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS — DONUT
+═══════════════════════════════════════════════════════════ */
+function drawDonut(cats) {
+  const cv=id('cv-donut'); if (!cv) return;
+  const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
+  const top=cats.filter(c=>c.total_debit>0).sort((a,b)=>b.total_debit-a.total_debit).slice(0,9);
+  if (!top.length) return;
+  const total=top.reduce((s,c)=>s+c.total_debit,0)||1;
+  const cx=85,cy=85,R=68,IR=34;
+  let ang=-Math.PI/2;
+  top.forEach((c,i)=>{
+    const s=(c.total_debit/total)*2*Math.PI;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,ang,ang+s);
+    ctx.closePath();ctx.fillStyle=PALETTE[i%PALETTE.length];ctx.fill();ang+=s;
+  });
+  ctx.beginPath();ctx.arc(cx,cy,IR,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();
+  ctx.font='bold 12px Segoe UI';ctx.fillStyle='#374151';ctx.textAlign='center';
+  ctx.fillText('Spend',cx,cy-2);
+  ctx.font='10px Segoe UI';ctx.fillStyle='#9ca3af';ctx.fillText('breakdown',cx,cy+12);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CATEGORY LIST
+═══════════════════════════════════════════════════════════ */
+function renderCatList(cats) {
+  const top=cats.filter(c=>c.total_debit>0).sort((a,b)=>b.total_debit-a.total_debit).slice(0,9);
+  const maxD=top[0]?.total_debit||1, totD=top.reduce((s,c)=>s+c.total_debit,0)||1;
+  id('cat-list').innerHTML=top.map((c,i)=>`
+    <div class="cat-row">
+      <div class="cat-dot" style="background:${PALETTE[i%PALETTE.length]}"></div>
+      <div class="cat-name">${c.label||c.category}</div>
+      <div class="cat-bar"><div class="cat-bar-f" style="width:${Math.round(c.total_debit/maxD*100)}%;background:${PALETTE[i%PALETTE.length]}"></div></div>
+      <div class="cat-amt">₹${fmt(c.total_debit)}</div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WHAT-IF SIMULATOR
+═══════════════════════════════════════════════════════════ */
+function scheduleWI() {
+  clearTimeout(WI_TIMER);
+  WI_TIMER = setTimeout(async()=>{
+    if (!DATA) return;
+    try {
+      const r=await fetch(API+'/api/whatif',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({account_number:DATA.account_number,
+          on_time_rate:parseFloat(id('ws1').value)/100,
+          has_sip:parseFloat(id('ws2').value)>0})});
+      const d=await r.json();
+      const c=d.projected_color||'#16a34a';
+      id('wi-s').textContent=d.projected_score;id('wi-s').style.color=c;
+      id('wi-g').textContent=d.projected_grade||'';
+      const delta=d.delta||0;
+      id('wi-d').textContent=(delta>=0?'▲ +':'▼ ')+delta+' points';
+      id('wi-d').style.color=delta>=0?'#15803d':'#dc2626';
+      id('wi-m').textContent=d.message||'';
+    }catch(e){}
+  },500);
+}
+function resetWI(){
+  if(!DATA)return; const fs=DATA.financial_summary||{};
+  id('ws1').value=fs.on_time_pct||90; id('wv1').textContent=(fs.on_time_pct||90)+'%';
+  id('ws2').value=0; id('wv2').textContent='₹0';
+  id('ws3').value=fs.savings_rate_pct||20; id('wv3').textContent=(fs.savings_rate_pct||20)+'%';
+  id('wi-s').textContent=DATA.score; id('wi-s').style.color=DATA.grade_color||'#16a34a';
+  id('wi-g').textContent=DATA.grade||''; id('wi-d').textContent='';
+  id('wi-m').textContent='Adjust sliders to simulate';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TRANSACTION TABLE
+═══════════════════════════════════════════════════════════ */
+function populateCatFilter(){
+  const sel=id('tf-cat');
+  const cs=[...new Set(ALL_TXNS.map(t=>t.category).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">All Categories</option>'+cs.map(c=>`<option value="${c}">${c.replace(/_/g,' ')}</option>`).join('');
+}
+function filterT(){
+  const q=(id('tf-q').value||'').toLowerCase();
+  const cat=id('tf-cat').value, typ=id('tf-typ').value;
+  FILT_TXNS=ALL_TXNS.filter(t=>
+    (!q||(t.merchant||'').toLowerCase().includes(q))&&
+    (!cat||t.category===cat)&&(!typ||t.type===typ));
+  CUR_PAGE=1;renderTable();
+}
+function renderTable(){
+  const start=(CUR_PAGE-1)*PER;
+  const slice=FILT_TXNS.slice(start,start+PER);
+  id('tbody').innerHTML=slice.map(t=>{
+    const cr=t.type==='CREDIT',late=t.is_late===true;
+    const cc=CAT_C[t.category]||'#9ca3af';
+    return `<tr class="${late?'is-late':''}">
+      <td style="color:var(--gray400)">${t.date||''}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${t.merchant||''}">${(t.merchant||'').substring(0,38)}</td>
+      <td><span class="ttag" style="background:${cc}18;color:${cc}">${(t.category||'').replace(/_/g,' ')}</span></td>
+      <td class="${cr?'cr':'dr'}">${cr?'↑':'↓'} ₹${fmtN(t.amount)}</td>
+      <td style="font-size:12px;font-weight:700;color:${cr?'#15803d':'#dc2626'}">${t.type}</td>
+      <td style="color:var(--gray400)">₹${fmtN(t.balance_after)}</td>
+      <td>${late?'<span class="late-pill">Late</span>':''}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--gray400)">No transactions match your filter</td></tr>';
+
+  const pages=Math.ceil(FILT_TXNS.length/PER);
+  const pg=id('pg-wrap');
+  if(pages<=1){pg.innerHTML='';} else {
+    const ns=[1];
+    if(CUR_PAGE>3)ns.push('…');
+    for(let i=Math.max(2,CUR_PAGE-1);i<=Math.min(pages-1,CUR_PAGE+1);i++)ns.push(i);
+    if(CUR_PAGE<pages-2)ns.push('…');
+    if(pages>1)ns.push(pages);
+    pg.innerHTML=ns.map(n=>n==='…'?`<span style="color:var(--gray400);font-size:13px">…</span>`
+      :`<div class="pg-btn ${n===CUR_PAGE?'on':''}" onclick="goPage(${n})">${n}</div>`).join('');
+  }
+  id('tbl-info').textContent=`Showing ${start+1}–${Math.min(start+PER,FILT_TXNS.length)} of ${FILT_TXNS.length.toLocaleString()} transactions`;
+}
+function goPage(n){CUR_PAGE=n;renderTable();id('score-pg').scrollIntoView();}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV EXPORT
+═══════════════════════════════════════════════════════════ */
+function exportCSV(){
+  const cols=['date','merchant','category','amount','type','balance_after','is_late'];
+  const rows=[cols.join(','),...FILT_TXNS.map(t=>cols.map(c=>`"${t[c]??''}"`).join(','))];
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+  a.download=`creditiq_${DATA?.account_number||'export'}.csv`;a.click();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════════════════ */
+function fmt(n){n=Math.round(n||0);if(n>=10000000)return(n/1e7).toFixed(1)+'Cr';if(n>=100000)return(n/1e5).toFixed(1)+'L';if(n>=1000)return(n/1000).toFixed(1)+'K';return n.toLocaleString('en-IN');}
+function fmtK(n){if(n>=100000)return(n/1e5).toFixed(0)+'L';if(n>=1000)return(n/1000).toFixed(0)+'K';return Math.round(n);}
+function fmtN(n){return(n||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function scoreCol(s){return s>=80?'#15803d':s>=65?'#16a34a':s>=50?'#ca8a04':s>=35?'#ea580c':'#dc2626';}
+function pctFromScore(s){return s>=80?88:s>=65?70:s>=50?48:s>=35?28:10;}
+function riskLabel(s){return s>=80?'Very Low Risk':s>=65?'Low Risk':s>=50?'Medium Risk':s>=35?'High Risk':'Very High Risk';}
+</script>
+</body>
+</html>
