@@ -1,6 +1,6 @@
 # CreditIQ — Transaction-Based Credit Scoring Platform
 
-> Predicts CIBIL credit scores (300–900) from 18 months of bank transaction history using Machine Learning.
+> Predicts CIBIL credit scores (0–100) from 18 months of bank transaction history using Machine Learning.
 
 ---
 
@@ -18,11 +18,11 @@ That's it. `start.bat` handles all dependency installation and model training au
 
 | Account Number    | Profile           | Expected Score |
 |-------------------|-------------------|---------------|
-| DEMO001INVESTOR   | Investor          | High (750+)   |
-| DEMO002YOUNG      | Young Professional| Good (650-749)|
-| DEMO003FAMILY     | Family Earner     | Fair (550-649)|
-| DEMO004GIG        | Gig Worker        | Poor (450-549)|
-| DEMO005STRUGGLE   | Struggling        | Very Poor (<450)|
+| DEMO001INVESTOR   | Investor          | High (85+)   |
+| DEMO002YOUNG      | Young Professional| Good (65-85)|
+| DEMO003FAMILY     | Family Earner     | Fair (45-65)|
+| DEMO004GIG        | Gig Worker        | Poor (30-45)|
+| DEMO005STRUGGLE   | Struggling        | Very Poor (<30)|
 
 ---
 
